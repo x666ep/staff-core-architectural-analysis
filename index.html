@@ -1,0 +1,33 @@
+<!doctype html><html lang=en><head><meta name=generator content="Hugo 0.104.3"><meta charset=utf-8><title>Architectural Analysis</title><meta name=apple-mobile-web-app-capable content="yes"><meta name=apple-mobile-web-app-status-bar-style content="black-translucent"><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"><link rel=stylesheet href=/reveal-js/css/reset.css><link rel=stylesheet href=/reveal-js/css/reveal.css><link rel=stylesheet href=/stylesheets/custom_white.css id=theme><link rel=stylesheet href=/highlight-js/default.min.css></head><body><div class=reveal><div class=slides><section><h1 id=staff-core-api>Staff Core API</h1><p>Serov Konstantin <a href=mailto:kserov@ozon.ru>kserov@ozon.ru</a></p></section><section><h2 id=table-of-contest>Table of contest</h2><ul><li>Предназначение сервиса, почему именно так оно работает?</li><li>Верхнеуровневая схема</li><li>Детальный разбор превращения данных в события</li></ul></section><section><h2 id=graph>Graph</h2><aside class=notes><ul><li>You found the <strong>speaker notes</strong>!</li></ul></aside><div class=mermaid>C4Context
+title System Context diagram for Internet Banking System
+Person(customerA, "Banking Customer A", "A customer of the bank, with personal bank accounts.")
+Person(customerB, "Banking Customer B")
+Person_Ext(customerC, "Banking Customer C")
+System(SystemAA, "Internet Banking System", "Allows customers to view information about their bank accounts, and make payments.")
+Person(customerD, "Banking Customer D", "A customer of the bank,<br>with personal bank accounts.")
+Enterprise_Boundary(b1, "BankBoundary") {
+SystemDb_Ext(SystemE, "Mainframe Banking System", "Stores all of the core banking information about customers, accounts, transactions, etc.")
+System_Boundary(b2, "BankBoundary2") {
+System(SystemA, "Banking System A")
+System(SystemB, "Banking System B", "A system of the bank, with personal bank accounts.")
+}
+System_Ext(SystemC, "E-mail system", "The internal Microsoft Exchange e-mail system.")
+SystemDb(SystemD, "Banking System D Database", "A system of the bank, with personal bank accounts.")
+Boundary(b3, "BankBoundary3", "boundary") {
+SystemQueue(SystemF, "Banking System F Queue", "A system of the bank, with personal bank accounts.")
+SystemQueue_Ext(SystemG, "Banking System G Queue", "A system of the bank, with personal bank accounts.")
+}
+}
+BiRel(customerA, SystemAA, "Uses")
+BiRel(SystemAA, SystemE, "Uses")
+Rel(SystemAA, SystemC, "Sends e-mails", "SMTP")
+Rel(SystemC, customerA, "Sends e-mails to")</div></section></div></div><script type=text/javascript src=/reveal-hugo/object-assign.js></script>
+<a href=/reveal-js/css/print/ id=print-location style=display:none></a>
+<script type=text/javascript>var printLocationElement=document.getElementById("print-location"),link=document.createElement("link");link.rel="stylesheet",link.type="text/css",link.href=printLocationElement.href+(window.location.search.match(/print-pdf/gi)?"pdf.css":"paper.css"),document.getElementsByTagName("head")[0].appendChild(link)</script><script type=application/json id=reveal-hugo-site-params>{"custom_theme":"stylesheets/custom_white.css","slide_number":true}</script><script type=application/json id=reveal-hugo-page-params>null</script><script src=/reveal-js/js/reveal.js></script>
+<script type=text/javascript>function camelize(e){return e&&Object.keys(e).forEach(function(t){newK=t.replace(/(_\w)/g,function(e){return e[1].toUpperCase()}),newK!=t&&(e[newK]=e[t],delete e[t])}),e}var revealHugoDefaults={center:!0,controls:!0,history:!0,progress:!0,transition:"slide"},revealHugoSiteParams=JSON.parse(document.getElementById("reveal-hugo-site-params").innerHTML),revealHugoPageParams=JSON.parse(document.getElementById("reveal-hugo-page-params").innerHTML),options=Object.assign({},camelize(revealHugoDefaults),camelize(revealHugoSiteParams),camelize(revealHugoPageParams));Reveal.initialize(options)</script><script type=text/javascript src=/reveal-js/plugin/markdown/marked.js></script>
+<script type=text/javascript src=/reveal-js/plugin/markdown/markdown.js></script>
+<script type=text/javascript src=/reveal-js/plugin/highlight/highlight.js></script>
+<script type=text/javascript src=/reveal-js/plugin/zoom-js/zoom.js></script>
+<script type=text/javascript src=/reveal-js/plugin/notes/notes.js></script>
+<script src=https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js></script>
+<script>mermaid.initialize({startOnLoad:!1});let render=e=>{let t=e.currentSlide.querySelectorAll(".mermaid");if(!t.length)return;t.forEach(e=>{let t=e.getAttribute("data-processed");t||mermaid.init(void 0,e)})};Reveal.addEventListener("slidechanged",render),Reveal.addEventListener("ready",render)</script></body></html>
