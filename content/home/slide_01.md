@@ -7,4 +7,4 @@
 {{% /note %}}
 
 
-![](images/staff-hell.gif)
+![](/images/staff-hell.gif)
