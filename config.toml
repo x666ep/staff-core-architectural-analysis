@@ -1,5 +1,5 @@
 baseURL = 'https://x666ep.github.io/staff-core-architectural-analysis'
-canonifyURLs = false
+canonifyURLs = true
 languageCode = 'ru-ru'
 title = 'Staff Core APIq'
 
