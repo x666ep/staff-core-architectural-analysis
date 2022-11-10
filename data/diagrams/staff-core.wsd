@@ -126,7 +126,8 @@ scale max 500 height
         из таблицы employee_last_changes_raw;
         if (Предыдущее состояние есть) then (yes)
                 :создаем обьект с полями prev_data и data
-                наполняем prev_data данными из поля data предыдущего сотояния
+                наполняем prev_data данными 
+                из поля data предыдущего сотояния
                 а data наполняется данными из события;
                 :построчно сравниваем prev_data и data;
                 if (Есть Diff) then (yes)
@@ -174,5 +175,39 @@ scale max 500 height
                 :объект сохраняем в таблицу account_last_changes_raw
                 с пометкой events_created = false;
             endif
+    stop
+@enduml
+
+@startuml FillChangesFlowGradeOrdersTopic
+skinparam ConditionEndStyle hline 
+scale max 500 height
+    start
+        :Получаем событие из кафки;
+        :Сохраняем в таблицу employee_grade_change_documents_raw;
+        :Запрашиваем из таблицы employee_grade_change_documents_raw 
+        приказы с тем-же documentID;
+
+        if (Есть документ с таким-же documentId) then (yes)
+            if (его version != прилетевшего из кафки) then (yes) 
+                if (Это отмена или распровод?) then (yes)
+                    :удаляем этот документ из employee_grade_change_documents_actual;
+                endif
+            else
+            :обновляем в значения в employee_grade_change_documents_actual
+            и устанавливаем version документа из кафки;
+            endif
+            else
+            :создаем новую строку employee_grade_change_documents_actual
+            со значениями документа из кафки;
+        endif
+    stop
+@enduml
+
+@startuml FillChangesFlowHireOrdersTopic
+skinparam ConditionEndStyle hline 
+scale max 500 height
+    start
+        :Получаем событие из кафки;
+        :Сохраняем в таблицу employee_hire_changes_raw;
     stop
 @enduml
