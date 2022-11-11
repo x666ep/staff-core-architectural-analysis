@@ -211,3 +211,142 @@ scale max 500 height
         :Сохраняем в таблицу employee_hire_changes_raw;
     stop
 @enduml
+
+@startuml ProcessHireChangesFlow
+skinparam ConditionEndStyle hline 
+scale max 500 height
+    start
+        :Выбираем из таблицы employee_hire_changes_raw 
+        все employee_guid необработанных приказов 
+        (applied_at IS NULL);
+        while (Перебираем в цикле массив employee_guid)
+            :для каждого employee_guid
+            получаем все его приказы
+            (все в тч и не обработанные);
+            :вычисляем актуальное состояние на текущую дату 
+            (те событие приказа уже наступило)
+            применяя приказы последовательно;
+            :сохраняем актуальное состояние в
+            employee_hire_status_actual;
+            :подготавливаем ивент/ивенты для внутреннего топика;
+            :кладем наши события в табличку employee_events
+            для дальнейшей отправки в kafka;
+        endwhile
+    stop
+@enduml
+
+@startuml ProcessEmployeeUpdatesPg1
+skinparam ConditionEndStyle hline 
+scale max 500 height
+    start
+        group Оформление
+            :Выбираем из таблицы employee_hire_status_actual 
+            все приказы с типом "Найм" 
+            и датой оформления (formalized_at) **IS NULL**;
+            :К приказам делаем JOIN данных состояний 
+            по сотруднику и ФЛ из employee_last_changes_raw 
+            которые еще не обработаны;
+            while (Перебираем в цикле массив приказов/состояний)
+                :делаем UPSERT ФЛ и Сотрудника, при этом
+                устанавливаем маркер что сотрудник неактивен;
+                :подготавливаем ивент/ивенты для внутреннего топика;
+                :кладем наши события в табличку employee_events
+                для дальнейшей отправки в kafka;
+                :помечаем что приказ на найм - оформлен 
+                (дата оформления ставится текущей датой);
+                :помечаем что состояние в таблице 
+                employee_last_changes_raw применено;
+            endwhile
+        end group
+        (A)
+@enduml
+
+
+@startuml ProcessEmployeeUpdatesPg2
+skinparam ConditionEndStyle hline 
+scale max 500 height
+        (A)
+        group Обновление
+            :Выбираем из таблицы employee_hire_status_actual 
+            все приказы с типом "Найм" 
+            и датой оформления (formalized_at) **IS NOT NULL**;
+            :К приказам делаем JOIN данных состояний 
+            по сотруднику и ФЛ из employee_last_changes_raw 
+            которые еще не обработаны;
+            while (Перебираем в цикле массив приказов/состояний)
+                :Проверяем, есть ли ФЛ
+                (по СИДУ, если не нашли то по guid ФЛ);
+                if (ФЛ Найден) then (yes)
+                :Проверяем, есть ли 
+                ФЛ руководителя 
+                этого сотрудник;
+                    if (ФЛ Найден) then (yes)
+                        :делаем UPSERT ФЛ и Сотрудника, при этом
+                        устанавливаем маркер что сотрудник активен;
+                        :подготавливаем ивент/ивенты для внутреннего топика;
+                        :кладем наши события в табличку employee_events
+                        для дальнейшей отправки в kafka;
+                        :помечаем что состояние в таблице 
+                        employee_last_changes_raw применено;
+                        else
+                        :пропускаем сотрудника до следующей итерации;
+                    endif
+                    else
+                    :кидаем ошибку в лог и пропускаем;
+                endif
+            endwhile
+        end group
+    stop
+@enduml
+
+
+@startuml ProcessAccountChanges
+skinparam ConditionEndStyle hline 
+scale max 500 height
+    start
+        :Выбираем из account_last_changes_raw
+        необработанные изменения;
+        while (Перебираем в цикле массив изменений)
+            :делаем UPSERT данных УЗ;
+            :подготавливаем ивент/ивенты для внутреннего топика;
+            :кладем наши события в табличку employee_events
+            для дальнейшей отправки в kafka;
+            :помечаем что состояние в таблице 
+            account_last_changes_raw применено;
+        endwhile
+    stop
+@enduml
+
+@startuml ProcessGradeChanges
+skinparam ConditionEndStyle hline 
+scale max 500 height
+    start
+        :Выбираем из employee_grade_change_documents_actual
+        актуальные на текущую дату приказы;
+        :JOIN актуальных грейдов к таблице employees
+        с условием что отличается грейд или уровень должности;
+        while (Перебираем в цикле массив тех кто "сджойнился")
+            :шифруем грейд;
+            :подготавливаем ивент/ивенты для внутреннего топика;
+            :кладем наши события в табличку employee_events
+            для дальнейшей отправки в kafka;
+            :обновляем данные по грейду и уровню должности
+            в табличке employees;
+        endwhile
+    stop
+@enduml
+
+@startuml ProcessCBParams
+skinparam ConditionEndStyle hline 
+scale max 500 height
+    start
+        :Выбираем из табличек *_changes
+        не примененные изменения;
+        while (Перебираем в цикле массив изменений)
+            :подготавливаем ивент/ивенты для внутреннего топика;
+            :кладем наши события в табличку employee_events
+            для дальнейшей отправки в kafka;
+            :обновляем данные в табличке employees;
+        endwhile
+    stop
+@enduml
