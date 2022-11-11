@@ -188,13 +188,16 @@ scale max 500 height
         приказы с тем-же documentID;
 
         if (Есть документ с таким-же documentId) then (yes)
-            if (его version != прилетевшего из кафки) then (yes) 
+            if (его version < прилетевшего из кафки) then (yes) 
+
                 if (Это отмена или распровод?) then (yes)
                     :удаляем этот документ из employee_grade_change_documents_actual;
+                    else
+                    :обновляем в значения в employee_grade_change_documents_actual
+                    и устанавливаем version документа из кафки;
                 endif
             else
-            :обновляем в значения в employee_grade_change_documents_actual
-            и устанавливаем version документа из кафки;
+            :скипаем документ;
             endif
             else
             :создаем новую строку employee_grade_change_documents_actual
